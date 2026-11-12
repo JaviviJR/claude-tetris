@@ -287,6 +287,8 @@ function loop(ts) {
     }
   }
   draw();
+  // endGame() puede ejecutarse dentro de este frame; no reprogramar el loop
+  if (gameOver) return;
   animId = requestAnimationFrame(loop);
 }
 
