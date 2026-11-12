@@ -5,8 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TETRIS</title>
   <link rel="stylesheet" href="style.css" />
+  <script>
+    // Aplica el tema guardado antes del primer render (evita parpadeo). Por defecto: oscuro.
+    try {
+      if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light';
+    } catch (e) {}
+  </script>
 </head>
 <body>
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambiar a modo claro">
+    <span id="theme-icon" aria-hidden="true">🌙</span>
+    <span id="theme-text">Oscuro</span>
+  </button>
   <h1 class="title">TETRIS</h1>
   <div class="wrapper">
     <div class="game-container">
