@@ -150,7 +150,8 @@ body {
   letter-spacing: 1px;
 }
 
-#next-canvas {
+#next-canvas,
+#hold-canvas {
   display: block;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -236,4 +237,8 @@ kbd {
 
 #restart-btn:hover {
   background: var(--accent-hover);
+}
+
+#hold-canvas.hold-locked {
+  opacity: 0.35;
 }
