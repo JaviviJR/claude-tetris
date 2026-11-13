@@ -59,8 +59,13 @@ jobs:
                (lista con `archivo:línea` y nombre de función)
                ### Propuesta de solución
                (pasos concretos de implementación)
-               ### Riesgos y preguntas abiertas
-               (información que falta, casos borde, posibles regresiones)
+               ### Riesgos
+               (casos borde, posibles regresiones y puntos a verificar durante la implementación;
+               no requieren respuesta del autor)
+               ### Preguntas abiertas
+               (decisiones de producto o información que falta y que el autor debe responder antes de implementar;
+               lista numerada, cada pregunta con las opciones posibles y tu recomendación.
+               Si no hay ninguna, escribe "Ninguna.")
 
             No modifiques ningún archivo del repositorio salvo `triage-report.md`. No publiques comentarios en el issue.
           claude_args: >-
