@@ -34,6 +34,8 @@ const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
 const nextCtx = nextCanvas.getContext('2d');
+const holdCanvas = document.getElementById('hold-canvas');
+const holdCtx = holdCanvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const linesEl = document.getElementById('lines');
 const levelEl = document.getElementById('level');
@@ -69,10 +71,11 @@ function applyTheme(theme, persist = true) {
   if (current && next) {
     draw();
     drawNext();
+    drawHold();
   }
 }
 
-let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let board, current, next, held, holdUsed, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -174,12 +177,14 @@ function lockPiece() {
 }
 
 function spawn() {
+  holdUsed = false;
   current = next;
   next = randomPiece();
   if (collide(current.shape, current.x, current.y)) {
     endGame();
   }
   drawNext();
+  drawHold();
 }
 
 function updateHUD() {
@@ -254,6 +259,40 @@ function drawNext() {
       drawBlock(nextCtx, offX + c, offY + r, shape[r][c], NB);
 }
 
+function drawHold() {
+  holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+  holdCanvas.classList.toggle('hold-locked', !!holdUsed);
+  holdCanvas.setAttribute('aria-label', holdUsed ? 'Reserva bloqueada hasta la siguiente pieza' : 'Reserva disponible');
+  if (!held) return;
+  const shape = held.shape;
+  const offX = Math.floor((4 - shape[0].length) / 2);
+  const offY = Math.floor((4 - shape.length) / 2);
+  for (let r = 0; r < shape.length; r++)
+    for (let c = 0; c < shape[r].length; c++)
+      drawBlock(holdCtx, offX + c, offY + r, shape[r][c], 30);
+}
+
+function holdPiece() {
+  if (holdUsed) return;
+  // Pieza con forma original (sin rotaciones) en posición de spawn
+  const fresh = type => {
+    const shape = PIECES[type].map(row => [...row]);
+    return { type, shape, x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 };
+  };
+  const stored = fresh(current.type);
+  if (!held) {
+    held = stored;
+    spawn();
+  } else {
+    current = held;
+    held = stored;
+    if (collide(current.shape, current.x, current.y)) endGame();
+  }
+  holdUsed = true;
+  dropAccum = 0;
+  drawHold();
+}
+
 function endGame() {
   gameOver = true;
   cancelAnimationFrame(animId);
@@ -304,6 +343,8 @@ function init() {
   dropInterval = 1000;
   dropAccum = 0;
   lastTime = performance.now();
+  held = null;
+  holdUsed = false;
   next = randomPiece();
   spawn();
   updateHUD();
@@ -328,6 +369,12 @@ document.addEventListener('keydown', e => {
     case 'ArrowUp':
     case 'KeyX':
       tryRotate();
+      break;
+    case 'KeyC':
+    case 'ShiftLeft':
+    case 'ShiftRight':
+      e.preventDefault();
+      if (!e.repeat) holdPiece();
       break;
     case 'Space':
       e.preventDefault();
