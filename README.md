@@ -43,6 +43,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Menú de pausa** (`P` / `Esc`) con opciones reales: **Reanudar**, **Reiniciar** (nueva partida sin recargar), **Ver controles** y selector de **Nivel inicial** (1–15, se guarda en `localStorage` y se aplica a la siguiente partida). Mientras está abierto, las teclas no llegan al juego.
 - **Game Over** con opción de reinicio.
+- **Tabla de récords local**: top 5 puntuaciones con nombre (se pide al hacer Game Over si entras en el top), más el **mejor combo** y las **líneas máximas** en una partida. Se muestra en la pantalla de inicio y en el Game Over, resalta tu entrada y se puede borrar con el botón «Borrar récords». Se guarda en `localStorage` (`tetris-records`).
 - **Modo claro / oscuro**: arranca en oscuro por defecto; el botón de la esquina superior derecha alterna el tema y recuerda la elección (`localStorage`).
 
 ---
@@ -128,10 +129,12 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: la partida empieza en el nivel inicial elegido en el menú de pausa (`startLevel`) y sube cada 10 líneas (`max(nivelInicial, floor(líneas / 10) + 1)`); la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
+- **Récords** (`loadRecords` / `saveRecords` / `renderRecords`): `localStorage['tetris-records']` guarda `{ top: [{name, score, lines, level, date}], bestCombo, maxLines, lastName }`. El **combo** cuenta piezas fijadas consecutivas que limpian al menos una línea (`trackCombo`); se reinicia al fijar una pieza sin limpiar. Los nombres se pintan con `textContent` (nunca como HTML) y, mientras se escribe en el campo de nombre, las teclas no llegan al juego (listener `keydown` en fase de captura).
 
 ### Flujo del juego
 
 ```
+showStartScreen()                   → pantalla de inicio con récords; «Jugar» llama a init()
 init()
   ├─ createBoard()                  → matriz vacía
   ├─ next = randomPiece()
@@ -147,7 +150,7 @@ init()
    keydown → mover / rotar / soft-drop / hard-drop / pausa
 ```
 
-Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**.
+Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**, con la tabla de récords y, si la puntuación entra en el top 5, un campo para escribir tu nombre (Enter o «Guardar»; si pulsas «Reiniciar» sin guardar, se guarda igualmente).
 
 ---
 
