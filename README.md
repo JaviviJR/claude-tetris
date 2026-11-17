@@ -45,6 +45,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Game Over** con opción de reinicio.
 - **Tabla de récords local**: top 5 puntuaciones con nombre (se pide al hacer Game Over si entras en el top), más el **mejor combo** y las **líneas máximas** en una partida. Se muestra en la pantalla de inicio y en el Game Over, resalta tu entrada y se puede borrar con el botón «Borrar récords». Se guarda en `localStorage` (`tetris-records`).
 - **Modo claro / oscuro**: arranca en oscuro por defecto; el botón de la esquina superior derecha alterna el tema y recuerda la elección (`localStorage`).
+- **Skins visuales**: selector bajo el botón de tema con cuatro estilos — **Retro** (bloques cuadrados, colores planos), **Neon** (fondo negro y _glow_ con `shadowBlur`), **Pastel** (colores suaves, bordes redondeados) y **Pixel art** (textura pixelada sobre cada bloque). Se aplica al instante sin recargar y se recuerda en `localStorage`.
 
 ---
 
@@ -190,8 +191,13 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLORS`       | Paleta de colores por tipo de pieza      | 8 colores             |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
+| `SKINS`        | Skins visuales: `label`, `colors` y `drawBlock` | `retro`, `neon`, `pastel`, `pixel` |
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
+
+### Añadir una skin
+
+Añade una entrada a `SKINS` en `game.js` con `label`, `colors` (índices 1–8: I, O, T, S, Z, J, L, N) y `drawBlock(ctx, px, py, color, size, alpha)`. El selector se rellena automáticamente; `drawBlock()` guarda y restaura el contexto, así que la skin puede tocar `shadowBlur`, `globalAlpha`, etc. sin afectar al resto. Para estilos de CSS específicos usa el selector `[data-skin="<clave>"]`.
 
 ---
 
