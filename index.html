@@ -62,7 +62,7 @@
             <li><kbd>↓</kbd> bajar</li>
             <li><kbd>Space</kbd> caída</li>
             <li><kbd>C</kbd>/<kbd>Shift</kbd> reservar</li>
-            <li><kbd>P</kbd> pausa</li>
+            <li><kbd>P</kbd>/<kbd>Esc</kbd> pausa</li>
           </ul>
         </div>
       </aside>
@@ -72,7 +72,58 @@
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
+        <!-- Récords: panel propio dentro del game over -->
+        <div id="records-panel" class="records-panel hidden">
+          <p id="record-badge" class="record-badge hidden"></p>
+          <form id="record-form" class="record-form hidden" autocomplete="off">
+            <label for="record-name" class="label">TU NOMBRE</label>
+            <div class="record-form-row">
+              <input id="record-name" type="text" maxlength="12" placeholder="Jugador" spellcheck="false" />
+              <button type="submit" class="records-btn">Guardar</button>
+            </div>
+          </form>
+          <div id="gameover-records" class="records"></div>
+        </div>
         <button id="restart-btn">Reiniciar</button>
+      </div>
+    </div>
+
+    <!-- ==== Menú de pausa ==== -->
+    <div id="pause-menu" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="overlay-box pause-box">
+        <p id="pause-title">PAUSA</p>
+        <button type="button" class="pause-btn" id="pause-resume">Reanudar</button>
+        <button type="button" class="pause-btn" id="pause-restart">Reiniciar</button>
+        <button type="button" class="pause-btn" id="pause-controls-btn" aria-expanded="false" aria-controls="pause-controls">Ver controles</button>
+        <ul id="pause-controls" class="pause-controls hidden">
+          <li><span><kbd>←</kbd><kbd>→</kbd></span> mover</li>
+          <li><span><kbd>↑</kbd>/<kbd>X</kbd></span> rotar</li>
+          <li><span><kbd>↓</kbd></span> bajar</li>
+          <li><span><kbd>Space</kbd></span> caída</li>
+          <li><span><kbd>C</kbd>/<kbd>Shift</kbd></span> reservar</li>
+          <li><span><kbd>P</kbd>/<kbd>Esc</kbd></span> pausa</li>
+        </ul>
+        <div class="pause-level">
+          <span class="label" id="start-level-label">NIVEL INICIAL</span>
+          <div id="start-level" class="pause-stepper" tabindex="0" role="spinbutton"
+               aria-labelledby="start-level-label" aria-valuemin="1" aria-valuemax="15" aria-valuenow="1">
+            <button type="button" class="stepper-btn" id="start-level-dec" tabindex="-1" aria-label="Bajar nivel inicial">−</button>
+            <span id="start-level-value" class="stepper-value">1</span>
+            <button type="button" class="stepper-btn" id="start-level-inc" tabindex="-1" aria-label="Subir nivel inicial">+</button>
+          </div>
+          <span class="pause-hint">Se aplica al reiniciar</span>
+        </div>
+        <p class="pause-hint"><kbd>↑</kbd><kbd>↓</kbd> navegar · <kbd>←</kbd><kbd>→</kbd> nivel · <kbd>Enter</kbd> elegir</p>
+      </div>
+    </div>
+    <!-- ==== Fin menú de pausa ==== -->
+    <!-- Pantalla de inicio con la tabla de récords -->
+    <div id="start-screen" class="overlay start-screen">
+      <div class="overlay-box">
+        <p class="records-title">RÉCORDS</p>
+        <div id="start-records" class="records"></div>
+        <button id="play-btn" class="records-btn records-btn-primary" type="button">Jugar</button>
+        <button id="reset-records-btn" class="records-btn-link" type="button">Borrar récords</button>
       </div>
     </div>
   </div>
