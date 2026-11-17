@@ -243,6 +243,140 @@ kbd {
   opacity: 0.35;
 }
 
+/* ==== Menú de pausa ==== */
+.pause-box {
+  min-width: 220px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 0 30px var(--board-shadow);
+}
+
+#pause-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--accent);
+}
+
+.pause-btn {
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.pause-btn:hover,
+.pause-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+
+#pause-resume {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+#pause-resume:hover,
+#pause-resume:focus-visible {
+  background: var(--accent-hover);
+  color: var(--accent-contrast);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.pause-controls {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+
+.pause-controls.hidden {
+  display: none;
+}
+
+.pause-controls li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pause-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pause-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.pause-stepper:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.stepper-btn {
+  width: 28px;
+  height: 28px;
+  background: var(--kbd-bg);
+  color: var(--text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stepper-value {
+  min-width: 2ch;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.pause-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
+/* ==== Fin menú de pausa ==== */
+
 /* ---- Récords (pantalla de inicio + game over) ---- */
 .start-screen {
   z-index: 1;
