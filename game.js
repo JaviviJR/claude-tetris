@@ -75,6 +75,142 @@ function applyTheme(theme, persist = true) {
   }
 }
 
+/* ---- Skins (temas visuales del tablero) ---- */
+// Cada skin define su paleta (índices 1..8: I, O, T, S, Z, J, L, N) y su propia
+// función de dibujo de bloque. drawBlock() delega en la skin activa.
+
+// Rectángulo redondeado con fallback para navegadores sin ctx.roundRect
+function roundRectPath(context, x, y, w, h, r) {
+  context.beginPath();
+  if (typeof context.roundRect === 'function') {
+    context.roundRect(x, y, w, h, r);
+    return;
+  }
+  context.moveTo(x + r, y);
+  context.arcTo(x + w, y, x + w, y + h, r);
+  context.arcTo(x + w, y + h, x, y + h, r);
+  context.arcTo(x, y + h, x, y, r);
+  context.arcTo(x, y, x + w, y, r);
+  context.closePath();
+}
+
+// Textura pixel art cacheada por color y tamaño (patrón determinista, sin Math.random)
+const pixelTextureCache = new Map();
+function pixelTexture(color, size) {
+  const key = color + '|' + size;
+  let tex = pixelTextureCache.get(key);
+  if (tex) return tex;
+  tex = document.createElement('canvas');
+  tex.width = tex.height = size;
+  const t = tex.getContext('2d');
+  const P = Math.max(2, Math.floor(size / 10)); // tamaño de cada "pixel"
+  const n = Math.floor((size - 2) / P);
+  const off = Math.floor((size - n * P) / 2);
+  t.fillStyle = color;
+  t.fillRect(off, off, n * P, n * P);
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (i === 0 || j === 0) t.fillStyle = 'rgba(255,255,255,0.45)';          // borde claro (arriba/izq.)
+      else if (i === n - 1 || j === n - 1) t.fillStyle = 'rgba(0,0,0,0.45)';   // borde oscuro (abajo/der.)
+      else {
+        const h = (i * 7 + j * 13 + i * j * 3) % 11;                            // patrón fijo pseudoaleatorio
+        if (h === 0 || h === 5) t.fillStyle = 'rgba(255,255,255,0.22)';
+        else if (h === 3 || h === 8) t.fillStyle = 'rgba(0,0,0,0.18)';
+        else continue;
+      }
+      t.fillRect(off + i * P, off + j * P, P, P);
+    }
+  }
+  pixelTextureCache.set(key, tex);
+  return tex;
+}
+
+// drawBlock(ctx, px, py, color, size, alpha): px/py en píxeles; globalAlpha ya aplicado
+const SKINS = {
+  retro: {
+    label: 'Retro',
+    colors: COLORS,
+    // Bloques cuadrados, colores planos (estilo original)
+    drawBlock(context, px, py, color, size) {
+      context.fillStyle = color;
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      // highlight
+      context.fillStyle = themeColors.highlight;
+      context.fillRect(px + 1, py + 1, size - 2, 4);
+      // borde para dar contraste sobre fondo claro
+      context.strokeStyle = themeColors.edge;
+      context.lineWidth = 1;
+      context.strokeRect(px + 1.5, py + 1.5, size - 3, size - 3);
+    },
+  },
+  neon: {
+    label: 'Neon',
+    colors: [null, '#00f0ff', '#fff200', '#d400ff', '#39ff14', '#ff073a', '#2979ff', '#ff8c00', '#ff00c8'],
+    // Contorno luminoso con glow (shadowBlur); drawBlock() restaura el contexto al terminar
+    drawBlock(context, px, py, color, size, alpha) {
+      context.shadowColor = color;
+      context.shadowBlur = size * 0.4;
+      context.globalAlpha = alpha * 0.25;
+      context.fillStyle = color;
+      context.fillRect(px + 3, py + 3, size - 6, size - 6);
+      context.globalAlpha = alpha;
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.strokeRect(px + 3, py + 3, size - 6, size - 6);
+      context.shadowBlur = 0;
+      context.fillStyle = 'rgba(255,255,255,0.7)';
+      context.fillRect(px + 5, py + 5, 3, 3);
+    },
+  },
+  pastel: {
+    label: 'Pastel',
+    colors: [null, '#a8e6ef', '#fdf1a7', '#d9c2f0', '#b8e6c1', '#f7b5b5', '#b9d4f7', '#ffd3a8', '#d7c4b8'],
+    // Colores suaves con bordes redondeados simulados
+    drawBlock(context, px, py, color, size) {
+      roundRectPath(context, px + 1.5, py + 1.5, size - 3, size - 3, size * 0.28);
+      context.fillStyle = color;
+      context.fill();
+      context.strokeStyle = 'rgba(0,0,0,0.15)';
+      context.lineWidth = 1;
+      context.stroke();
+      // brillo suave
+      roundRectPath(context, px + size * 0.22, py + size * 0.16, size * 0.56, size * 0.18, size * 0.09);
+      context.fillStyle = 'rgba(255,255,255,0.55)';
+      context.fill();
+    },
+  },
+  pixel: {
+    label: 'Pixel art',
+    colors: [null, '#3cbcfc', '#f8d838', '#b853f8', '#58d854', '#f83800', '#0078f8', '#fc9838', '#ac7c00'],
+    // Patrón de textura pixelado sobre cada bloque
+    drawBlock(context, px, py, color, size) {
+      context.imageSmoothingEnabled = false;
+      context.drawImage(pixelTexture(color, size), px, py);
+    },
+  },
+};
+const DEFAULT_SKIN = 'retro';
+let activeSkin = DEFAULT_SKIN;
+const skinSelect = document.getElementById('skin-select');
+
+function applySkin(name, persist = true) {
+  if (!Object.prototype.hasOwnProperty.call(SKINS, name)) name = DEFAULT_SKIN;
+  activeSkin = name;
+  document.documentElement.dataset.skin = name;
+  skinSelect.value = name;
+  if (persist) {
+    try { localStorage.setItem('skin', name); } catch (e) {}
+  }
+  readThemeColors(); // la skin puede sobrescribir --grid y demás variables en CSS
+  // Redibujar: en pausa o game over el loop está detenido
+  if (current && next) {
+    draw();
+    drawNext();
+    drawHold();
+  }
+}
+/* ---- Fin skins ---- */
+
 let board, current, next, held, holdUsed, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
 function createBoard() {
@@ -195,18 +331,13 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
-  context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = themeColors.highlight;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
-  // borde para dar contraste sobre fondo claro
-  context.strokeStyle = themeColors.edge;
-  context.lineWidth = 1;
-  context.strokeRect(x * size + 1.5, y * size + 1.5, size - 3, size - 3);
-  context.globalAlpha = 1;
+  // Delega en la skin activa (ver sección "Skins")
+  const skin = SKINS[activeSkin];
+  const a = alpha ?? 1;
+  context.save();
+  context.globalAlpha = a;
+  skin.drawBlock(context, x * size, y * size, skin.colors[colorIndex], size, a);
+  context.restore(); // resetea globalAlpha, shadowBlur, etc. (evita fugas del glow)
 }
 
 function drawGrid() {
@@ -395,5 +526,17 @@ themeToggle.addEventListener('click', () => {
 let savedTheme = null;
 try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
 applyTheme(savedTheme === 'light' ? 'light' : 'dark', false);
+
+// Skins: rellenar selector, restaurar preferencia y cambiar sin recargar
+for (const [key, skin] of Object.entries(SKINS)) {
+  skinSelect.add(new Option(skin.label, key));
+}
+skinSelect.addEventListener('change', () => {
+  applySkin(skinSelect.value);
+  skinSelect.blur(); // evita que las flechas/espacio del juego cambien la skin
+});
+let savedSkin = null;
+try { savedSkin = localStorage.getItem('skin'); } catch (e) {}
+applySkin(savedSkin, false);
 
 init();
